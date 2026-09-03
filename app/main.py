@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from app.database import engine
-
-# Create the FastAPI application instance
+from app.dependencies import get_db
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 app = FastAPI()
 
 
@@ -19,6 +20,5 @@ def health():
 
 # Database test endpoint — attempts to establish a connection to PostgreSQL
 @app.get("/db-test")
-def db_test():
-    with engine.connect() as connection:
-        return {"database": "connected"}
+def db_test(db: Session = Depends(get_db)):
+    return {"database": "connected"}
