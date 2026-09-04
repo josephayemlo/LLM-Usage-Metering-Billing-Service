@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
 
+#The UsageEvent model represents a record of usage for a specific tenant in the system.
 class UsageEvent(Base):
     __tablename__ = "usage_events"
 

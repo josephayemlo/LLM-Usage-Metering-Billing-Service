@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
 
-
+#The Plan model represents a subscription plan in the system.
 class Plan(Base):
     __tablename__ = "plans"
 

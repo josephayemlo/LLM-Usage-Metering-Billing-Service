@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
 
-
+#The Subscription model represents a subscription for a specific tenant in the system.
 class Subscription(Base):
     __tablename__ = "subscriptions"
 

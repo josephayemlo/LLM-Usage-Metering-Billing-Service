@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
 
-
+#The Tenant model represents a customer account in the system.
 class Tenant(Base):
     __tablename__ = "tenants"
 

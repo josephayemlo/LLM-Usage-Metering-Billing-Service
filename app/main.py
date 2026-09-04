@@ -3,8 +3,11 @@ from app.database import engine
 from app.dependencies import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-app = FastAPI()
+from app.routers.tenants import router as tenant_router
 
+
+app = FastAPI()
+app.include_router(tenant_router)
 
 # Root endpoint — confirms that the API is running
 @app.get("/")
