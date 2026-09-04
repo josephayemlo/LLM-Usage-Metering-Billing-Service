@@ -1,4 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from enum import Enum
+
+
+
+# UsageType enum to define the allowed usage types
+class UsageType(str, Enum):
+    API_CALL = "api_call"
+    AI_TOKEN = "ai_token"
 
 
 """
@@ -44,3 +52,22 @@ class SubscriptionResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+# Usage schemas
+class UsageCreate(BaseModel):
+    tenant_id: int
+    usage_type: UsageType
+    quantity: int = Field(gt=0) # The quantity must be greater than 0 to ensure that we don't record negative or zero usage events.
+
+
+class UsageResponse(BaseModel):
+    id: int
+    tenant_id: int
+    usage_type: UsageType
+    quantity: int
+    idempotency_key: str
+
+    model_config = {
+        "from_attributes": True
+    }
+

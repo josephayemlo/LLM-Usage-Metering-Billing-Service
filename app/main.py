@@ -6,12 +6,14 @@ from sqlalchemy import text
 from app.routers.tenants import router as tenant_router
 from app.routers.plans import router as plan_router
 from app.routers.subscriptions import router as subscription_router
-
+from app.routers.usage import router as usage_router
 
 app = FastAPI()
 app.include_router(tenant_router)
 app.include_router(plan_router)
 app.include_router(subscription_router)
+app.include_router(usage_router)
+
 
 # Root endpoint — confirms that the API is running
 @app.get("/")
