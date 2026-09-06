@@ -1,8 +1,14 @@
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from app.models.usage_event import UsageEvent
+from app.services.quota_service import check_quota, QuotaExceededError
+"""
+This function records the a new usage for a tenant, but it first checks if the request
+has already been processed using the idempotency key to avoid duplicates. If it has not,
+it checks the tenant's quota before creating and saving the usage event.
+The idempontency check must be done before the quota check.
+"""
 
-# The record_usage function records a usage event for a specific tenant in the database.
 def record_usage(
     db: Session,
     tenant_id: int,
@@ -21,6 +27,15 @@ def record_usage(
 
     if existing_event is not None:
         return existing_event
+    allowed = check_quota(
+        db=db,
+        tenant_id=tenant_id,
+        usage_type=usage_type,
+        quantity=quantity,
+    )
+
+    if not allowed:
+        raise QuotaExceededError("usage quota exceeded")
 
     usage_event = UsageEvent(
         tenant_id=tenant_id,

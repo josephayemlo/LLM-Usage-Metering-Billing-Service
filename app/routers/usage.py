@@ -2,19 +2,21 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
-from app.schemas import UsageCreate, UsageResponse
+from app.schemas import UsageCreate, UsageResponse, UsageType
 from app.services.usage_service import (
     record_usage,
     get_usage_event,
     get_tenant_usage,
     get_usage_total
 )
+from app.services.quota_service import check_quota, QuotaExceededError
+
+
 
 router = APIRouter(
     prefix="/usage",
     tags=["Usage"],
 )
-
 
 @router.post("/", response_model=UsageResponse)
 def create_usage_event(
@@ -22,14 +24,19 @@ def create_usage_event(
     idempotency_key: str = Header(...),
     db: Session = Depends(get_db),
 ):
-    return record_usage(
-        db=db,
-        tenant_id=usage.tenant_id,
-        usage_type=usage.usage_type.value,
-        quantity=usage.quantity,
-        idempotency_key=idempotency_key,
-    )
-
+    try:
+        return record_usage(
+            db=db,
+            tenant_id=usage.tenant_id,
+            usage_type=usage.usage_type.value,
+            quantity=usage.quantity,
+            idempotency_key=idempotency_key,
+        )
+    except QuotaExceededError as exc:
+        raise HTTPException(
+            status_code=429,
+            detail=str(exc),
+        )
 
 
 @router.get("/tenant/{tenant_id}", response_model=list[UsageResponse])
@@ -59,17 +66,33 @@ def get_existing_usage_event(
 @router.get("/tenant/{tenant_id}/total")
 def get_usage_total_for_tenant(
     tenant_id: int,
-    usage_type: str,
+    usage_type: UsageType,
     db: Session = Depends(get_db),
 ):
     total = get_usage_total(
         db,
         tenant_id,
-        usage_type,
+        usage_type.value,
     )
 
     return {
         "tenant_id": tenant_id,
-        "usage_type": usage_type,
+        "usage_type": usage_type.value,
         "total": total,
     }
+
+# The create_usage_event endpoint now checks the quota before recording the usage event.
+@router.post("/", response_model=UsageResponse)
+def create_usage_event(
+    usage: UsageCreate,
+    idempotency_key: str = Header(...),
+    db: Session = Depends(get_db),
+):
+
+    return record_usage(
+        db=db,
+        tenant_id=usage.tenant_id,
+        usage_type=usage.usage_type.value,
+        quantity=usage.quantity,
+        idempotency_key=idempotency_key,
+    )

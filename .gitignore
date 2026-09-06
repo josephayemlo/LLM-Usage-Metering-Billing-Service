@@ -1,3 +1,4 @@
 virtual/
 .env
 notes.md
+server.sh
