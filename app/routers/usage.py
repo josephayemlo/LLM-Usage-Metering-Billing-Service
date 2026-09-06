@@ -7,9 +7,10 @@ from app.services.usage_service import (
     record_usage,
     get_usage_event,
     get_tenant_usage,
-    get_usage_total
 )
 from app.services.quota_service import check_quota, QuotaExceededError
+from app.services.usage_query_service import get_usage_total
+
 
 
 
@@ -18,6 +19,9 @@ router = APIRouter(
     tags=["Usage"],
 )
 
+
+
+# The create_usage_event endpoint now checks the quota before recording the usage event.
 @router.post("/", response_model=UsageResponse)
 def create_usage_event(
     usage: UsageCreate,
@@ -37,6 +41,7 @@ def create_usage_event(
             status_code=429,
             detail=str(exc),
         )
+
 
 
 @router.get("/tenant/{tenant_id}", response_model=list[UsageResponse])
@@ -81,18 +86,3 @@ def get_usage_total_for_tenant(
         "total": total,
     }
 
-# The create_usage_event endpoint now checks the quota before recording the usage event.
-@router.post("/", response_model=UsageResponse)
-def create_usage_event(
-    usage: UsageCreate,
-    idempotency_key: str = Header(...),
-    db: Session = Depends(get_db),
-):
-
-    return record_usage(
-        db=db,
-        tenant_id=usage.tenant_id,
-        usage_type=usage.usage_type.value,
-        quantity=usage.quantity,
-        idempotency_key=idempotency_key,
-    )

@@ -1,12 +1,4 @@
-from pydantic import BaseModel, Field
-from enum import Enum
-
-
-
-# UsageType enum to define the allowed usage types
-class UsageType(str, Enum):
-    API_CALL = "api_call"
-    AI_TOKEN = "ai_token"
+from pydantic import BaseModel
 
 
 """
@@ -27,6 +19,7 @@ We dontt need to send the created_at field to the API, so we don't include it in
 But an id is needed to identify the tenant, so we include it in the response schema.
 This is what the user will receive as a response after creating a new tenant.
 """
+
 class TenantResponse(BaseModel):
     id: int
     name: str
@@ -34,40 +27,3 @@ class TenantResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
-
-
-# Subscription schemas
-class SubscriptionCreate(BaseModel):
-    tenant_id: int
-    plan_id: int
-    status: str
-
-
-class SubscriptionResponse(BaseModel):
-    id: int
-    tenant_id: int
-    plan_id: int
-    status: str
-
-    model_config = {
-        "from_attributes": True
-    }
-
-# Usage schemas
-class UsageCreate(BaseModel):
-    tenant_id: int
-    usage_type: UsageType
-    quantity: int = Field(gt=0) # The quantity must be greater than 0 to ensure that we don't record negative or zero usage events.
-
-
-class UsageResponse(BaseModel):
-    id: int
-    tenant_id: int
-    usage_type: UsageType
-    quantity: int
-    idempotency_key: str
-
-    model_config = {
-        "from_attributes": True
-    }
-

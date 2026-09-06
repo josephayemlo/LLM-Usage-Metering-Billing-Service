@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.models.subscription import Subscription
 from app.models.plan import Plan
-from app.services.usage_service import get_usage_total
+from app.services.usage_query_service import get_usage_total
 
 
 class QuotaExceededError(Exception):
