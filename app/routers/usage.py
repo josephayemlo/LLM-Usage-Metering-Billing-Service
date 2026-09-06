@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
-from app.schemas import UsageCreate, UsageResponse, UsageType
+from app.schemas.usage import UsageCreate, UsageResponse, UsageType
 from app.services.usage_service import (
     record_usage,
     get_usage_event,

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
-from app.schemas import TenantCreate, TenantResponse
+from app.schemas.tenant import TenantCreate, TenantResponse
 from app.services.tenant_service import (
     create_tenant,
     get_tenant,

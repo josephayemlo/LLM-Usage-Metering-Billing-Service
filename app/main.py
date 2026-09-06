@@ -7,12 +7,15 @@ from app.routers.tenants import router as tenant_router
 from app.routers.plans import router as plan_router
 from app.routers.subscriptions import router as subscription_router
 from app.routers.usage import router as usage_router
+from app.routers.generate import router as generate_router
+
 
 app = FastAPI()
 app.include_router(tenant_router)
 app.include_router(plan_router)
 app.include_router(subscription_router)
 app.include_router(usage_router)
+app.include_router(generate_router)
 
 
 # Root endpoint — confirms that the API is running

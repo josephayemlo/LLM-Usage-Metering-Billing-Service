@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
-from app.schemas import SubscriptionCreate, SubscriptionResponse
+from app.schemas.subscription import SubscriptionCreate, SubscriptionResponse
 from app.services.subscription_service import (
     create_subscription, 
     get_subscription, 
