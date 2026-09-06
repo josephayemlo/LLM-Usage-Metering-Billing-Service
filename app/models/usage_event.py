@@ -31,7 +31,8 @@ class UsageEvent(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, nullable=False
     )
-
+# This unique constraint ensures that the same tenant_id
+# cannot have the same idempotency_key more than once.
     __table_args__ = (
         UniqueConstraint(
             "tenant_id",

@@ -2,6 +2,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from app.models.usage_event import UsageEvent
 from app.services.quota_service import check_quota, QuotaExceededError
+from sqlalchemy.exc import IntegrityError
 """
 This function records the a new usage for a tenant, but it first checks if the request
 has already been processed using the idempotency key to avoid duplicates. If it has not,
@@ -16,8 +17,7 @@ def record_usage(
     quantity: int,
     idempotency_key: str,
 ) -> UsageEvent:
-    # Check if a usage event with the same tenant_id and idempotency_key already exists in the database.
-    #This helps avoid duplicate records for the same usage event.
+
     existing_event = db.execute(
         select(UsageEvent).where(
             UsageEvent.tenant_id == tenant_id,
@@ -27,6 +27,7 @@ def record_usage(
 
     if existing_event is not None:
         return existing_event
+
     allowed = check_quota(
         db=db,
         tenant_id=tenant_id,
@@ -45,7 +46,23 @@ def record_usage(
     )
 
     db.add(usage_event)
-    db.commit()
+
+    #the try block detects and handles a violation of the hardening
+    # You must add the uniqueness on the model for this to work
+    try: 
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        existing_event = db.execute(
+            select(UsageEvent).where(
+                UsageEvent.tenant_id == tenant_id,
+                UsageEvent.idempotency_key == idempotency_key,
+            )
+        ).scalar_one()
+
+        return existing_event
+
     db.refresh(usage_event)
 
     return usage_event

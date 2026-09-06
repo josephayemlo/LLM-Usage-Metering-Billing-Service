@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.schemas.generate import GenerateRequest, GenerateResponse
 from app.services.pricing_service import calculate_cost_micro_units
+from app.services.quota_service import QuotaExceededError
 from app.services.usage_service import record_usage
 
 router = APIRouter(prefix="/generate", tags=["Generate"])
@@ -25,15 +26,25 @@ def generate(
         reasoning_tokens=request.reasoning_tokens,
     )
 
-    total_tokens = input_tokens + output_tokens
-
-    record_usage(
-        db=db,
-        tenant_id=request.tenant_id,
-        usage_type="ai_token",
-        quantity=total_tokens,
-        idempotency_key=idempotency_key,
+    total_tokens = (
+        input_tokens
+        + output_tokens
+        + request.reasoning_tokens
     )
+
+    try:
+        record_usage(
+            db=db,
+            tenant_id=request.tenant_id,
+            usage_type="ai_token",
+            quantity=total_tokens,
+            idempotency_key=idempotency_key,
+        )
+    except QuotaExceededError as exc:
+        raise HTTPException(
+            status_code=429,
+            detail=str(exc),
+        )
 
     return GenerateResponse(
         tenant_id=request.tenant_id,
