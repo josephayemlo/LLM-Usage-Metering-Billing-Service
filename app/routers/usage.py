@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
+from app.schemas import subscription
 from app.schemas.usage import UsageCreate, UsageResponse, UsageType
 from app.services.usage_service import (
     record_usage,
@@ -10,7 +11,9 @@ from app.services.usage_service import (
 )
 from app.services.quota_service import check_quota, QuotaExceededError
 from app.services.usage_query_service import get_usage_total
+from sqlalchemy import select
 
+from app.models.subscription import Subscription
 
 
 
@@ -74,10 +77,25 @@ def get_usage_total_for_tenant(
     usage_type: UsageType,
     db: Session = Depends(get_db),
 ):
+    subscription = db.execute(
+        select(Subscription).where(
+            Subscription.tenant_id == tenant_id,
+            Subscription.status == "active",
+        )
+    ).scalar_one_or_none()
+
+    if subscription is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Active subscription not found",
+        )
+
     total = get_usage_total(
         db,
         tenant_id,
         usage_type.value,
+        subscription.current_period_start,
+        subscription.current_period_end,
     )
 
     return {

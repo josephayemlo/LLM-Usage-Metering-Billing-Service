@@ -1,10 +1,11 @@
 import logging
 
 from celery import Task
-from sqlalchemy import func
+from sqlalchemy import func, select
 
 from app.celery_app import celery_app
 from app.database import SessionLocal
+from app.models.subscription import Subscription
 from app.models.usage_event import UsageEvent
 
 logger = logging.getLogger(__name__)
@@ -28,11 +29,20 @@ class RetryableTask(Task):
     bind=True,
     base=RetryableTask,
 )
-
 def process_usage_summary(self, tenant_id: int):
     db = SessionLocal()
 
     try:
+        subscription = db.execute(
+            select(Subscription).where(
+                Subscription.tenant_id == tenant_id,
+                Subscription.status == "active",
+            )
+        ).scalar_one_or_none()
+
+        if subscription is None:
+            raise ValueError("Active subscription not found")
+
         api_calls = db.query(
             func.coalesce(
                 func.sum(UsageEvent.quantity),
@@ -41,6 +51,8 @@ def process_usage_summary(self, tenant_id: int):
         ).filter(
             UsageEvent.tenant_id == tenant_id,
             UsageEvent.usage_type == "api_call",
+            UsageEvent.created_at >= subscription.current_period_start,
+            UsageEvent.created_at < subscription.current_period_end,
         ).scalar()
 
         ai_tokens = db.query(
@@ -51,6 +63,8 @@ def process_usage_summary(self, tenant_id: int):
         ).filter(
             UsageEvent.tenant_id == tenant_id,
             UsageEvent.usage_type == "ai_token",
+            UsageEvent.created_at >= subscription.current_period_start,
+            UsageEvent.created_at < subscription.current_period_end,
         ).scalar()
 
         logger.info(

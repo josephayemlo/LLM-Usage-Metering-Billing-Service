@@ -104,6 +104,13 @@ def verify_payment(
             status_code=404,
             detail="Plan not found",
         )
+    if subscription.status == "active":
+        return PaymentVerifyResponse(
+            reference=request.reference,
+            status="success",
+            amount=plan.price_kobo,
+            subscription_status=subscription.status,
+        )
 
     try:
         transaction = verify_transaction(request.reference)

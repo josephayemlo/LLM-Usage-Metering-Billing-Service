@@ -271,3 +271,4 @@ def test_generate_idempotency_survives_budget_exhaustion(client, db):
     ).all()
 
     assert len(events) == 1
+

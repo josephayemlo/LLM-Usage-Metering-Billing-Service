@@ -16,7 +16,8 @@ def check_quota(
     quantity: int,
 ) -> bool:
     subscription = db.query(Subscription).filter(
-        Subscription.tenant_id == tenant_id
+    Subscription.tenant_id == tenant_id,
+    Subscription.status == "active",
     ).first()
 
     if subscription is None:

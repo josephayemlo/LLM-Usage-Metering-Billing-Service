@@ -12,6 +12,8 @@ from app.dependencies import get_db
 from app.models.payment_event import PaymentEvent
 from app.models.plan import Plan
 from app.models.subscription import Subscription
+from sqlalchemy.exc import IntegrityError
+
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
@@ -113,12 +115,16 @@ async def paystack_webhook(
 
     db.add(payment_event)
 
-    now = datetime.now()
+    now = datetime.utcnow()
 
     subscription.status = "active"
     subscription.current_period_start = now
     subscription.current_period_end = now + relativedelta(months=1)
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return {"status": "already_processed"}
 
     return {"status": "processed"}

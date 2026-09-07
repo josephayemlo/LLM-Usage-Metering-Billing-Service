@@ -28,8 +28,8 @@ class UsageEvent(Base):
         String(255), nullable=False
     )
     cost_micro_units: Mapped[int] = mapped_column(
-    nullable=False,
-    default=0,
+        nullable=False,
+        default=0,
     )
 
     created_at: Mapped[datetime] = mapped_column(
