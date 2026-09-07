@@ -11,6 +11,7 @@ class SubscriptionResponse(BaseModel):
     tenant_id: int
     plan_id: int
     status: str
+    paystack_reference: str | None
 
     model_config = {
         "from_attributes": True

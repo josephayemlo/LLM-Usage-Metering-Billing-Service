@@ -12,29 +12,32 @@ class Subscription(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     tenant_id: Mapped[int] = mapped_column(
-        ForeignKey("tenants.id"), nullable=False
+        ForeignKey("tenants.id"),
+        nullable=False,
     )
 
     plan_id: Mapped[int] = mapped_column(
-        ForeignKey("plans.id"), nullable=False
+        ForeignKey("plans.id"),
+        nullable=False,
     )
 
-    stripe_customer_id: Mapped[str | None] = mapped_column(
-        String(255), nullable=True
-    )
-
-    stripe_subscription_id: Mapped[str | None] = mapped_column(
-        String(255), nullable=True
+    paystack_reference: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        unique=True,
     )
 
     status: Mapped[str] = mapped_column(
-        String(50), nullable=False
+        String(50),
+        nullable=False,
     )
 
     current_period_start: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True
+        DateTime,
+        nullable=True,
     )
 
     current_period_end: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True
+        DateTime,
+        nullable=True,
     )
