@@ -9,6 +9,7 @@ from app.routers.subscriptions import router as subscription_router
 from app.routers.usage import router as usage_router
 from app.routers.generate import router as generate_router
 from app.routers.payment import router as payment_router
+from app.routers.webhook import router as webhook_router
 
 app = FastAPI()
 app.include_router(tenant_router)
@@ -17,6 +18,7 @@ app.include_router(subscription_router)
 app.include_router(usage_router)
 app.include_router(generate_router)
 app.include_router(payment_router)
+app.include_router(webhook_router)
 
 
 # Root endpoint — confirms that the API is running

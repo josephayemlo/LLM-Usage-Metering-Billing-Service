@@ -46,8 +46,8 @@ def db():
         tenant_id=tenant.id,
         plan_id=free_plan.id,
         status="active",
-        current_period_start=datetime.utcnow() - timedelta(days=1),
-        current_period_end=datetime.utcnow() + timedelta(days=29),
+        current_period_start=datetime.now() - timedelta(days=1),
+        current_period_end=datetime.now() + timedelta(days=29),
     )
 
     session.add(subscription)
@@ -99,3 +99,32 @@ def test_quota_boundary(db):
             quantity=1,
             idempotency_key="over-limit-key",
         )
+
+def test_usage_outside_billing_period_is_not_counted(db):
+    from datetime import datetime, timedelta
+
+    from app.models.usage_event import UsageEvent
+    from app.services.usage_query_service import get_usage_total
+
+    old_event = UsageEvent(
+        tenant_id=1,
+        usage_type="ai_token",
+        quantity=100,
+        idempotency_key="old-event",
+        created_at=datetime.now() - timedelta(days=10),
+    )
+
+    db.add(old_event)
+    db.commit()
+
+    subscription = db.query(Subscription).first()
+
+    total = get_usage_total(
+        db=db,
+        tenant_id=1,
+        usage_type="ai_token",
+        period_start=subscription.current_period_start,
+        period_end=subscription.current_period_end,
+    )
+
+    assert total == 0
