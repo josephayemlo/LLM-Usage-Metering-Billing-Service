@@ -34,11 +34,12 @@ def generate(
 
     try:
         record_usage(
-            db=db,
-            tenant_id=request.tenant_id,
-            usage_type="ai_token",
-            quantity=total_tokens,
-            idempotency_key=idempotency_key,
+        db=db,
+        tenant_id=request.tenant_id,
+        usage_type="ai_token",
+        quantity=total_tokens,
+        idempotency_key=idempotency_key,
+        cost_micro_units=cost_micro_units,
         )
     except QuotaExceededError as exc:
         raise HTTPException(

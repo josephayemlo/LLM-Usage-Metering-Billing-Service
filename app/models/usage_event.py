@@ -27,6 +27,10 @@ class UsageEvent(Base):
     idempotency_key: Mapped[str] = mapped_column(
         String(255), nullable=False
     )
+    cost_micro_units: Mapped[int] = mapped_column(
+    nullable=False,
+    default=0,
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, nullable=False

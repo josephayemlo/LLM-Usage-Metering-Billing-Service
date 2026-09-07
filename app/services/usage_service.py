@@ -16,6 +16,7 @@ def record_usage(
     usage_type: str,
     quantity: int,
     idempotency_key: str,
+    cost_micro_units: int = 0,
 ) -> UsageEvent:
 
     existing_event = db.execute(
@@ -43,6 +44,7 @@ def record_usage(
         usage_type=usage_type,
         quantity=quantity,
         idempotency_key=idempotency_key,
+        cost_micro_units=cost_micro_units,
     )
 
     db.add(usage_event)
