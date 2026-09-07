@@ -33,6 +33,8 @@ def check_quota(
         db,
         tenant_id,
         usage_type,
+        subscription.current_period_start,
+        subscription.current_period_end,
     )
 
     if usage_type == "api_call":
