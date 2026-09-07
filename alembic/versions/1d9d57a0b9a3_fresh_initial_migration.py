@@ -1,8 +1,8 @@
 """fresh_initial_migration
 
-Revision ID: 83786c2e650f
+Revision ID: 1d9d57a0b9a3
 Revises: 
-Create Date: 2026-09-07 10:18:53.851590
+Create Date: 2026-09-07 12:13:33.534870
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '83786c2e650f'
+revision: str = '1d9d57a0b9a3'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -39,6 +39,7 @@ def upgrade() -> None:
     sa.Column('paystack_plan_code', sa.String(length=255), nullable=True),
     sa.Column('api_call_limit', sa.Integer(), nullable=False),
     sa.Column('ai_token_limit', sa.Integer(), nullable=False),
+    sa.Column('ai_budget_micro_units', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name'),
@@ -69,6 +70,7 @@ def upgrade() -> None:
     sa.Column('usage_type', sa.String(length=50), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
     sa.Column('idempotency_key', sa.String(length=255), nullable=False),
+    sa.Column('cost_micro_units', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id'], ),
     sa.PrimaryKeyConstraint('id'),

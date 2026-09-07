@@ -17,4 +17,5 @@ class Plan(Base):
     paystack_plan_code: Mapped[str | None] = mapped_column(String(255),nullable=True,unique=True,)
     api_call_limit: Mapped[int] = mapped_column(Integer, nullable=False)
     ai_token_limit: Mapped[int] = mapped_column(Integer, nullable=False)
+    ai_budget_micro_units: Mapped[int] = mapped_column(default=0,nullable=False,)
     created_at: Mapped[datetime] = mapped_column( DateTime, default=datetime.now, nullable=False)

@@ -32,17 +32,19 @@ def db():
     tenant = Tenant(name="Test Tenant")
 
     free_plan = Plan(
-        name="Free",
-        api_call_limit=1000,
-        ai_token_limit=100,
-        price_kobo=0,
-        billing_interval="monthly",
+    name="Free",
+    api_call_limit=1000,
+    ai_token_limit=100,
+    ai_budget_micro_units=100000,
+    price_kobo=0,
+    billing_interval="monthly",
     )
 
     pro_plan = Plan(
         name="Pro",
         api_call_limit=10000,
         ai_token_limit=1000,
+        ai_budget_micro_units=1000000,
         price_kobo=500000,
         billing_interval="monthly",
     )
@@ -196,3 +198,76 @@ def test_generate_persists_ai_cost(client, db):
 
     assert usage_event is not None
     assert usage_event.cost_micro_units == 42
+
+
+
+def test_generate_rejects_when_ai_budget_exceeded(client, db):
+    plan = db.query(Plan).filter(
+        Plan.name == "Free"
+    ).first()
+
+    plan.ai_budget_micro_units = 41
+    db.commit()
+
+    response = client.post(
+        "/generate/",
+        json={
+            "tenant_id": 1,
+            "prompt": "hello world",
+        },
+        headers={
+            "idempotency-key": "budget-exceeded-test",
+        },
+    )
+
+    assert response.status_code == 402
+    assert response.json()["detail"] == "AI budget exceeded"
+
+    usage_event = db.query(UsageEvent).filter(
+        UsageEvent.idempotency_key == "budget-exceeded-test"
+    ).first()
+
+    assert usage_event is None
+
+def test_generate_idempotency_survives_budget_exhaustion(client, db):
+    plan = db.query(Plan).filter(
+        Plan.name == "Free"
+    ).first()
+
+    plan.ai_budget_micro_units = 42
+    db.commit()
+
+    first_response = client.post(
+        "/generate/",
+        json={
+            "tenant_id": 1,
+            "prompt": "hello world",
+        },
+        headers={
+            "idempotency-key": "budget-idempotency-test",
+        },
+    )
+
+    assert first_response.status_code == 200
+
+    plan.ai_budget_micro_units = 0
+    db.commit()
+
+    second_response = client.post(
+        "/generate/",
+        json={
+            "tenant_id": 1,
+            "prompt": "hello world",
+        },
+        headers={
+            "idempotency-key": "budget-idempotency-test",
+        },
+    )
+
+    assert second_response.status_code == 200
+
+    events = db.query(UsageEvent).filter(
+        UsageEvent.idempotency_key == "budget-idempotency-test"
+    ).all()
+
+    assert len(events) == 1

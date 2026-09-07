@@ -3,6 +3,10 @@ from sqlalchemy.orm import Session
 from app.models.usage_event import UsageEvent
 from app.services.quota_service import check_quota, QuotaExceededError
 from sqlalchemy.exc import IntegrityError
+from app.services.budget_service import (
+    AIBudgetExceededError,
+    check_ai_budget,
+)
 """
 This function records the a new usage for a tenant, but it first checks if the request
 has already been processed using the idempotency key to avoid duplicates. If it has not,
@@ -28,6 +32,18 @@ def record_usage(
 
     if existing_event is not None:
         return existing_event
+    
+    if usage_type == "ai_token":
+        allowed_budget = check_ai_budget(
+        db=db,
+        tenant_id=tenant_id,
+        cost_micro_units=cost_micro_units,
+    )
+
+        if not allowed_budget:
+            raise AIBudgetExceededError("AI budget exceeded")
+
+    
 
     allowed = check_quota(
         db=db,

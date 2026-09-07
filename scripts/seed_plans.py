@@ -17,6 +17,7 @@ def seed_plans():
             description="Free plan for basic usage",
             api_call_limit=1_000,
             ai_token_limit=100_000,
+            ai_budget_micro_units=100_000,
             price_kobo=0,
             billing_interval="monthly",
             paystack_plan_code=None,
@@ -28,6 +29,7 @@ def seed_plans():
             api_call_limit=10_000,
             ai_token_limit=1_000_000,
             price_kobo=500_000,
+            ai_budget_micro_units=1_000_000,
             billing_interval="monthly",
             paystack_plan_code=None,
         )

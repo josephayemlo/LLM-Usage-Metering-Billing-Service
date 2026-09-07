@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
-
+from app.services.budget_service import AIBudgetExceededError
 from app.dependencies import get_db
 from app.schemas.generate import GenerateRequest, GenerateResponse
 from app.services.pricing_service import calculate_cost_micro_units
@@ -40,6 +40,11 @@ def generate(
         quantity=total_tokens,
         idempotency_key=idempotency_key,
         cost_micro_units=cost_micro_units,
+        )
+    except AIBudgetExceededError as exc:
+        raise HTTPException(
+            status_code=402,
+            detail=str(exc),
         )
     except QuotaExceededError as exc:
         raise HTTPException(
