@@ -1,3 +1,17 @@
+## plans
+
+### Free Plan
+
+![Free plan](screenshots/get_free_plan.png)
+
+This screenshot shows that the Free plan was successfully seeded and can be retrieved from the database.
+
+### Pro Plan
+
+![Pro plan](screenshots/get_pro_plan.png)
+
+This screenshot shows that the Pro plan was successfully seeded and can be retrieved from the database.
+
 ## Tenant
 
 ### Tenant Creation
