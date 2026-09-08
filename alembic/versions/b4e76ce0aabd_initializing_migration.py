@@ -1,8 +1,8 @@
-"""fresh_initial_migration
+"""Initializing Migration
 
-Revision ID: 1d9d57a0b9a3
+Revision ID: b4e76ce0aabd
 Revises: 
-Create Date: 2026-09-07 12:13:33.534870
+Create Date: 2026-09-08 13:12:12.892603
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '1d9d57a0b9a3'
+revision: str = 'b4e76ce0aabd'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -56,7 +56,7 @@ def upgrade() -> None:
     sa.Column('tenant_id', sa.Integer(), nullable=False),
     sa.Column('plan_id', sa.Integer(), nullable=False),
     sa.Column('paystack_reference', sa.String(length=255), nullable=True),
-    sa.Column('status', sa.String(length=50), nullable=False),
+    sa.Column('status', sa.Enum('ACTIVE', 'PENDING', 'CANCELLED', 'EXPIRED', name='subscriptionstatus'), nullable=False),
     sa.Column('current_period_start', sa.DateTime(), nullable=True),
     sa.Column('current_period_end', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['plan_id'], ['plans.id'], ),

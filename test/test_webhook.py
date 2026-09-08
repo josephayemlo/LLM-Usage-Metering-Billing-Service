@@ -2,16 +2,17 @@ import hashlib
 import hmac
 import json
 import os
-from datetime import datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+
 from app.database import Base
 from app.dependencies import get_db
 from app.main import app
+from app.models.payment import Payment, PaymentStatus
 from app.models.plan import Plan
 from app.models.subscription import Subscription
 from app.models.tenant import Tenant
@@ -20,10 +21,11 @@ from app.models.tenant import Tenant
 @pytest.fixture
 def db():
     engine = create_engine(
-    "sqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
     Base.metadata.create_all(engine)
 
     TestingSessionLocal = sessionmaker(bind=engine)
@@ -48,7 +50,17 @@ def db():
         paystack_reference="TEST-REFERENCE-123",
     )
 
-    session.add(subscription)
+    payment = Payment(
+        tenant_id=tenant.id,
+        plan_id=plan.id,
+        amount=500000,
+        reference="TEST-REFERENCE-123",
+        status=PaymentStatus.PENDING,
+        authorization_url="https://example.com/pay",
+        access_code="TEST-ACCESS-CODE",
+    )
+
+    session.add_all([subscription, payment])
     session.commit()
 
     yield session
@@ -142,13 +154,17 @@ def test_duplicate_webhook_is_not_processed_twice(client, db):
     first_response = client.post(
         "/webhooks/paystack",
         content=payload,
-        headers={"x-paystack-signature": signature},
+        headers={
+            "x-paystack-signature": signature,
+        },
     )
 
     second_response = client.post(
         "/webhooks/paystack",
         content=payload,
-        headers={"x-paystack-signature": signature},
+        headers={
+            "x-paystack-signature": signature,
+        },
     )
 
     assert first_response.json()["status"] == "processed"

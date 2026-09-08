@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
 
-
+#For Webhook events, we will store the event_id, event_type, reference, and created_at timestamp in the database. This will help us to keep track of the events that we have received from Paystack and avoid processing the same event multiple times.
 class PaymentEvent(Base):
     __tablename__ = "payment_events"
 

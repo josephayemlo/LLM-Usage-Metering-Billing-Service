@@ -3,3 +3,4 @@ virtual/
 notes.md
 server.sh
 celery.sh
+migrate.sh

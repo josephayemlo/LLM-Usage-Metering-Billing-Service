@@ -2,8 +2,15 @@ from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
-
+from enum import Enum
+from sqlalchemy import Enum as SQLEnum
 from app.database import Base
+
+class SubscriptionStatus(str, Enum):
+    ACTIVE = "active"
+    PENDING = "pending"
+    CANCELLED = "cancelled"
+    EXPIRED = "expired"
 
 #The Subscription model represents a subscription for a specific tenant in the system.
 class Subscription(Base):
@@ -27,9 +34,9 @@ class Subscription(Base):
         unique=True,
     )
 
-    status: Mapped[str] = mapped_column(
-        String(50),
-        nullable=False,
+    status: Mapped[SubscriptionStatus] = mapped_column(
+    SQLEnum(SubscriptionStatus),
+    nullable=False
     )
 
     current_period_start: Mapped[datetime | None] = mapped_column(

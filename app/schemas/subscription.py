@@ -1,16 +1,12 @@
 from pydantic import BaseModel
-
-class SubscriptionCreate(BaseModel):
-    tenant_id: int
-    plan_id: int
-    status: str
+from app.models.subscription import SubscriptionStatus
 
 
 class SubscriptionResponse(BaseModel):
     id: int
     tenant_id: int
     plan_id: int
-    status: str
+    status: SubscriptionStatus
     paystack_reference: str | None
 
     model_config = {

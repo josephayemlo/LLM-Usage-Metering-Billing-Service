@@ -1,6 +1,6 @@
 # LLM Usage Metering & Billing Engine
 
-A backend service for tracking API and AI-token usage, enforcing subscription quotas, calculating AI usage costs, and integrating Paystack payments.
+A backend service for tracking API and AI-token usage, enforcing subscription quotas, calculating AI usage costs, and integrating payments.
 
 ## Architecture
 
@@ -129,6 +129,7 @@ app/
 │   ├── subscription.py
 │   ├── usage_event.py
 │   └── payment_event.py
+│   └── payment.py
 │
 ├── routers/
 │   ├── tenant.py
@@ -143,6 +144,8 @@ app/
 │   ├── usage.py
 │   ├── generate.py
 │   └── payment.py
+│   └── subscription.py
+│   └── tenant.py
 │
 ├── services/
 │   ├── usage_service.py
@@ -150,6 +153,11 @@ app/
 │   ├── pricing_service.py
 │   ├── budget_service.py
 │   └── paystack_service.py
+│   ├── plan_service.py
+│   ├── subscription_service.py
+│   ├── tenant_service.py
+│   ├── token_service.py
+│   └── usage_query_service.py
 │
 ├── tasks/
 │   └── usage_tasks.py
@@ -214,12 +222,20 @@ alembic upgrade head
 ### 6. Seed the Plans
 
 ```bash
-python scripts/seed_plans.py
+python -m scripts.seed_plans
 ```
 
 This creates the Free and Pro plans.
 
-### 7. Start Redis
+### 7. Install Redis on your machine
+
+Redis is required as the message broker for Celery.
+
+On Ubuntu/Debian, install Redis Server:
+
+```bash
+sudo apt update
+sudo apt install redis-server
 
 Make sure Redis is running:
 
@@ -245,7 +261,7 @@ The API will be available at:
 http://127.0.0.1:8000
 ```
 
-Interactive API documentation:
+Interactive Swagger API documentation:
 
 ```text
 http://127.0.0.1:8000/docs
@@ -264,5 +280,5 @@ The worker processes background usage-summary tasks through Redis.
 ### 10. Run Tests
 
 ```bash
-pytest
+python -m pytest
 ```

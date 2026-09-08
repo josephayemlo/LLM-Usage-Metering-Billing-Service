@@ -3,24 +3,6 @@ from sqlalchemy.orm import Session
 
 from app.models.subscription import Subscription
 
-# Creates a new subscription for a tenant with a specific plan and status.
-def create_subscription(
-    db: Session,
-    tenant_id: int,
-    plan_id: int,
-    status: str,
-) -> Subscription:
-    subscription = Subscription(
-        tenant_id=tenant_id,
-        plan_id=plan_id,
-        status=status,
-    )
-
-    db.add(subscription)
-    db.commit()
-    db.refresh(subscription)
-
-    return subscription
 
 # Retrieves a subscription by its ID from the database.
 def get_subscription(
