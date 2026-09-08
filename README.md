@@ -174,7 +174,7 @@ test/
 .env.example
 ```
 
-## Setup
+## Setup Using Localhost
 
 ### 1. Prerequisites
 
@@ -282,3 +282,135 @@ The worker processes background usage-summary tasks through Redis.
 ```bash
 python -m pytest
 ```
+
+## Setup Using Docker
+
+### 1. Prerequisites
+
+Install:
+
+* Docker
+* Docker Compose
+
+Make sure Docker is running:
+
+```bash
+docker --version
+docker compose version
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env.docker` file in the project root:
+
+```env
+DATABASE_URL=postgresql+psycopg://metering_user:your_password@db:5432/metering_billing
+
+PAYSTACK_SECRET_KEY=sk_test_your_key_here
+
+PAYSTACK_INITIALIZE_URL=https://api.paystack.co/transaction/initialize
+
+PAYSTACK_VERIFY_URL=https://api.paystack.co/transaction/verify/
+
+REDIS_URL=redis://redis:6379/0
+```
+
+Do not commit `.env.docker` or real credentials to the repository.
+
+> **Note:** Inside Docker, `db` and `redis` refer to the PostgreSQL and Redis services defined in `docker-compose.yml`. Do not use `localhost` for these services from inside the containers.
+
+### 3. Build and Start the Containers
+
+From the project root, run:
+
+```bash
+docker compose up --build -d
+```
+
+This builds the application image and starts the FastAPI, PostgreSQL, Redis, and Celery services.
+
+Check the running containers:
+
+```bash
+docker compose ps
+```
+
+### 4. Run Database Migrations
+
+Run the migrations inside the API container:
+
+```bash
+docker compose exec api alembic upgrade head
+```
+
+### 5. Seed the Plans
+
+Run:
+
+```bash
+docker compose exec api python -m scripts.seed_plans
+```
+
+This creates the Free and Pro plans.
+
+### 6. Access the API
+
+The API will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Interactive Swagger API documentation:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+### 7. Celery Worker
+
+The Celery worker runs as a Docker service and uses Redis as its message broker.
+
+To view the worker logs:
+
+```bash
+docker compose logs -f celery
+```
+
+### 8. View Application Logs
+
+To view the API logs:
+
+```bash
+docker compose logs -f api
+```
+
+To view all service logs:
+
+```bash
+docker compose logs -f
+```
+
+### 9. Run Tests
+
+Run the test suite inside the API container:
+
+```bash
+docker compose exec api python -m pytest
+```
+
+### 10. Stop the Application
+
+To stop the containers:
+
+```bash
+docker compose down
+```
+
+To stop the containers and remove the database volume:
+
+```bash
+docker compose down -v
+```
+
+> **Warning:** `docker compose down -v` deletes the PostgreSQL data stored in the Docker volume.

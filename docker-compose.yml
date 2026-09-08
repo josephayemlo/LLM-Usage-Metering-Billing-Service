@@ -1,0 +1,27 @@
+services:
+  api:
+    build: .
+    container_name: llm-metering-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.docker
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:17
+    container_name: llm-metering-db
+    environment:
+      POSTGRES_USER: metering_user
+      POSTGRES_PASSWORD: meteringpassword
+      POSTGRES_DB: metering_billing
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: llm-metering-redis
+volumes:
+  postgres_data:
