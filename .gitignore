@@ -4,4 +4,4 @@ notes.md
 server.sh
 celery.sh
 migrate.sh
-.env.docker
+.env.docker.env.docker
